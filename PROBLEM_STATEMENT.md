@@ -9,15 +9,15 @@ The specific set of sequences you will get satisfy a very unique property:  ther
 The output of your program should be this unique sequence that contains each of the given input strings as a substring.
 In addition to the code you wrote, we also ask for a README describing your general approach as well as any additional code you wrote to evaluate your solution. We would prefer your code to be written in Python, Go, Scala, Javascript, or Java.
 
-Example input:
->Frag_56
-ATTAGACCTG
->Frag_57
-CCTGCCGGAA
->Frag_58
-AGACCTGCCG
->Frag_59
-GCCGGAATAC
+Example input:  
+>Frag_56  
+ATTAGACCTG  
+>Frag_57  
+CCTGCCGGAA  
+>Frag_58  
+AGACCTGCCG  
+>Frag_59  
+GCCGGAATAC  
 
-Example output:
+Example output:  
 ATTAGACCTGCCGGAATAC
