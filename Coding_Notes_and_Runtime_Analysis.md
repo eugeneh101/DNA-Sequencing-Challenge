@@ -1,0 +1,37 @@
+Gene Sequencer from fragments!  
+
+__OVERVIEW__:  
+For my class GeneSequencer, it takes an file name upon instantiation. I have written a function called "main" that will create the GeneSequencer object and perform all the method calls and solely return the final solution, which is the unique gene string.  
+
+__CODING DETAILS__ (of methods and attributes):  
+__load_data__: Given a file name, the GeneSequencer can load the data into a dictionary called sequence_name_string where the fragment name is the key and the fragment string literal is the value.  
+__find_adjacent_pairs__: For any given fragment name, this method will find a fragment name that can connect to the right or left of this given fragment. Do this for all fragments and store in dictionary called match_to_left and match_to_right. match_to_left is a dictionary where the key is the fragment name and the value is the set of fragment names that connect to the key on the left side. Same idea for match_to_right. This heuristical method works by given a fragment name, find the fragment string and slice it into halves. Check if this fragment string half exists in other fragment strings. This approach doesn't guarantee that the given string can be connected to another string. For example, if the string is "ATATGGGGGGGG", the string half "GGGGGGGG" exists in another string "ACTGGGGGGGGCAT" but cannot be connected. You can think of it has a false positive for possible pairing.  
+__find_adjacent_confirmed_pairs__: This method guarantees that the pair is a possible pair, hence removing the possibility of error mentioned in find_adjacent_pairs. Using the difflib library, the SequenceMatcher also informs about the length of the overlapping characters between 2 strings. The overlap number is useful in constructing the final gene string such that there isn't double counting when placing 2 adjacent strings together.  
+__build_final_string_from_left_side__: Heuristical check if there exists a leftmost fragment (whereby this fragment has no connections to its left side). If such a fragment exists, then there is a guarantee that the final sequence of fragment names can be built by adding fragment names to the leftmost fragment name. I use a memoization scheme through a dictionary to keep track of possible fragment sequences as I build rightwards.  
+__build_final_string_from_right_side__: Performs the same heuristical check as build_final_string_from_left_side except builds final sequence of fragment names from the right side (and reverses the order of fragment names upon completion).  
+__build_final_string_from_any_fragment__: Suppose both previous heuristical methods of looking for endpoint fragments do not exist, then guess any fragment as the starting leftmost node and attempt to build rightwards. Continue until solution is found.  
+return_unique_string: Given a solution exists, take the correct sequence of fragment names and join the corresponding fragment string literals while accounting for overlaps. 
+
+
+__RUNTIME SPEED AND COMPLEXITY__:  
+__load_data__: loads very fast. Store in dictionary.  
+__find_adjacent_pairs__: fast heuristic though time complexity is at O(n^2). What we want is to filter out obviously impossible pairs so you have possible left-right pairs.  
+__find_adjacent_confirmed_pairs__: slow. Technically worst case time complexity is O(n^2). Realistically, for any given fragment, this function only checks 2 or 3 possible fragments to connect to the left and right. More than 75% of the time is spend here in this guarantee checking since difflib is slow for very long strings. Had there not been a heuristical filter using find_adjacent_pairs, then runtime will increase by a factor of more than 10!  
+__build_final_string_from_left_side__: Within O(1) iteration, method can determine if a solution can be built from left to right. If not, then method will return and next method will build from right side on leftwards. If solution can be built, it will take exactly O(n) iterations to find the solution.  
+__build_final_string_from_right_side__: Within O(1) iteration, it will determine if a solution has been created from build_final_string_from_left_side. If so, body of this method will not execute. If not, within O(1) iteration, it will determine if a solution can be built from the right side on leftwards. If rightmost fragment exists, it will build solution in O(n) iterations.   
+__build_final_string_from_any_fragment__: checks within O(1) iteration whether both build_final_string_from_left_side and build_final_string_from_right_side have failed. If so, will perform O(n^2) iterations to extract solution as a last resort.  
+__return_unique_string__: very fast. O(n) iterations to build final string literal.  
+__Extra note__: I extensively use dictionaries for fast entry and lookup. I use lists sparing and in the places I do, most lists in practice often will not exceed 3 elements.
+
+
+
+__ROBUSTNESS__:  
+This class is robust to known edge cases:  
+__find_adjacent_confirmed_pairs__ guarantees overlaps between 2 fragments.  
+__find_adjacent_pairs__ and __find_adjacent_confirmed_pairs__ have double entry bookkeeping. If fragmentA connects to fragmentB on fragmentB's left side, then fragmentB connects to fragment A on fragment A's right side. However, without double entry bookkeeping, my methods would fail because there's an edge case. fragmentA = "ACATCGGG" and fragmentB = "GGGAC". More than half of fragment B is found in fragmentA, but half of fragmentA is not found in fragmentB. Double entry bookeeping, though redundant for most pairs, will take care of edge cases where one fragment string is much longer than the other one.  
+Suppose the logic in build_final_string_from_left_side is faulty and doesn't generate a solution even though it should, build_final_string_from_right_side will perform a check and find the solution if it can. build_final_string_from_any_fragment also has this built-in redundancy. About 30% of the code (build_final_string_from_right_side and build_final_string_from_any_fragment) will likely not be executed as build_final_string_from_left_string in most cases will find a solution.  
+Another note about build_final_string_from_left is my motivation for using __memoization__ instead of Breadth-First-Search or Depth-First-Search. Had I used DFS, it would only work well to traverse all fragments ONLY if I knew which fragment was the starting node. However, if I don't have leftmost or rightmost node, DFS not guarantee a solution as it would could not traverse all fragments if the guess for the starting fragment is incorrect--hence infinite runtime. Also, memoization is more robust in that if there were a flaw in the logic, it will still terminate within a finite number of iterations and check to see if the answer is correct. This will not be true for DFS as it would keep going up and down the search tree if there exists no solution. Memory usage in memoized dictionary is relately larger than DFS but, in absolute terms, quite small.  
+
+
+__CAVEATS__:  
+The only requirements for this class to run properly is that the input file is formatted correctly. My class performs virtually no preprocessing, so it requires that the line for fragment names starts with ">" and that each line ends with '\n'. The only preprocessing performed is stripping '\n' from end of the line.  

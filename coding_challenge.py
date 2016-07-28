@@ -20,7 +20,7 @@ class GeneSequencer(object):
         Given a file name, will load the data and perform simple cleaning to 
         load into sequene_name_string dictionary attribute.
         """
-        f = open(file_name, 'rb')
+        f = open(file_name, 'r')
         lines = [line[:-1] for line in f.readlines()] # remove '\n'
 
         starter_indices = []
@@ -80,11 +80,9 @@ class GeneSequencer(object):
             for match in [temp for temp in matches if (temp.size > 
                                                        len(f_s) / 2)]:
                 if match.a == 0 and match.b + match.size == len(o_f_s):
-                    #print "match to the left"
                     self.match_to_left_confirmed[f_n][o_f_n] = match.size
                     self.match_to_right_confirmed[o_f_n][f_n] = match.size
                 if match.b == 0 and match.a + match.size == len(f_s):
-                    #print"match to the right"
                     self.match_to_right_confirmed[f_n][o_f_n] = match.size
                     self.match_to_left_confirmed[o_f_n][f_n] = match.size
 
@@ -112,7 +110,6 @@ class GeneSequencer(object):
 
         left_starter = set(self.sequence_name_string.keys()) - \
             set(self.match_to_left_confirmed.keys())
-        #print left_starter
         if len(left_starter) != 1:
             print """Either there exists no fragment name that is the first 
             fragment OR there are more than 1 fragment name. 0 fragment names
@@ -127,7 +124,6 @@ class GeneSequencer(object):
         left_starter = left_starter.pop()
         sequence_dict = {None: [[None]], left_starter: [[]]}
         current_keys = [left_starter]
-        #print current_keys
 
         for _ in xrange(len(self.sequence_name_string) - 1): # has finite iterations
             next_keys = []
@@ -144,7 +140,6 @@ class GeneSequencer(object):
                 if len(set(frag_seq)) + 1 == len(self.sequence_name_string) \
                     and len(frag_seq) + 1 == len(self.sequence_name_string):
                     self.final_frag_name_sequence = frag_seq + [frag_name]
-                    #print frag_seq
                     return
 
     def build_final_string_from_right_side(self):
@@ -169,7 +164,6 @@ class GeneSequencer(object):
 
         right_starter = set(self.sequence_name_string.keys()) - \
             set(self.match_to_right_confirmed.keys())
-        #print right_starter
         if len(right_starter) != 1:
             print """Either there exists no fragment name that is the last 
             fragment OR there are more than 1 fragment name. 0 fragment names
@@ -184,7 +178,6 @@ class GeneSequencer(object):
         right_starter = right_starter.pop()
         sequence_dict = {None: [[None]], right_starter: [[]]}
         current_keys = [right_starter]
-        #print current_keys
         
         # has finite iterations even if code breaks
         for _ in xrange(len(self.sequence_name_string) - 1):
@@ -203,7 +196,6 @@ class GeneSequencer(object):
                     and len(frag_seq) + 1 == len(self.sequence_name_string):
                     self.final_frag_name_sequence = (frag_seq + 
                          [frag_name])[::-1] # have to reverse the sequence
-                    #print frag_seq
                     return
 
     def build_final_string_from_any_fragment(self):
@@ -228,7 +220,6 @@ class GeneSequencer(object):
             return # only excute if both previous methods have failed
 
         for starter in self.sequence_name_string:
-            #print starter
             sequence_dict = {None: [[None]], starter: [[]]}
             current_keys = [starter]
             # finite number of iterations even if code breaks
@@ -247,7 +238,6 @@ class GeneSequencer(object):
                     if len(set(frag_seq)) + 1 == len(self.sequence_name_string)\
                         and len(frag_seq) + 1 == len(self.sequence_name_string):
                         self.final_frag_name_sequence = frag_seq + [frag_name]
-                        #print frag_seq
                         return # when solution found, return from method
 
     def return_unique_string(self):
@@ -280,5 +270,7 @@ def main(file_name):
     gene_sequencer.load_data(file_name)
     gene_sequencer.find_adjacent_pairs()
     gene_sequencer.find_adjacent_confirmed_pairs()
+    gene_sequencer.build_final_string_from_left_side()
+    gene_sequencer.build_final_string_from_right_side()
     gene_sequencer.build_final_string_from_any_fragment()
     return gene_sequencer.return_unique_string()

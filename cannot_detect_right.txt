@@ -1,0 +1,8 @@
+>Frag_1
+TAGGAAAAA
+>Frag_0
+ATTAGG
+>Frag_2
+AAAAAGTCGAA
+>Frag_3
+GTCGAAAAA
